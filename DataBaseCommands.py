@@ -40,6 +40,14 @@ def get_class(time=14, role='all'):
     kolo2.load_from_discord(type='2',date='2024-12-14',time='20:33-22:00',host="Fimpro222",description="XD222")
     return [kolo1,kolo2]
 
+def create_problem(content,solve,tags=""):
+    #dodanie zadania do bazy zadan
+    print("CONTENT",content)
+    print("SOLVE",solve)
+    print("TAGI",tags.split(" "))
+    id=0
+    return id
+
 def add_point(member, points):
     #in discord.member class, int number
     #Task add (points) points to given member

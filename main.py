@@ -36,19 +36,10 @@ async def print_custom_classes(ctx):
             await ctx.send(
                 f"{i}: Kolo z {kolo.type_str}: \n Data: {kolo.date} w godzinach: {kolo.time} \n Prowadzi: {kolo.host}, "
                 f"{kolo.description}")
+@bot.command(name="NoweZadanie")
+async def new_problem(ctx):
+    await botcommands.new_problem(ctx,bot)
 
-@bot.event
-async def on_ready(): #synchornizujemy bazę danych po restarcie
-    print(f'Bot is ready. Logged in as {bot.user}')
-    guild = bot.guilds[0]
-    for i in bot.guilds:
-        if i.name=='testowanie bota':
-            guild = i
-            print(guild)
-    members = guild.members
-    db.connect_database()
-    db.sync_members(members)
-    hourly_task.start()
 
 
 @tasks.loop(hours=1)

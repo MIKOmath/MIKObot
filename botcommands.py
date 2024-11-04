@@ -95,3 +95,50 @@ async def add_class(ctx, bot):
         db.add_class(kolo)
     else:
         await ctx.send(f"You are not worthy, {ctx.author.mention}")
+
+async def new_problem(ctx,bot):
+    def check(m):
+        return m.author == ctx.author and m.channel == ctx.channel
+
+    await ctx.send("Podaj treść zadania: ")
+    try:
+        problem_statement = await bot.wait_for("message", check=check, timeout=600.0)
+        statement_text = problem_statement.content
+        while (True):
+            msg = await ctx.send("Jeśli to cała treść, napisz \"koniec\". Jeśli nie pisz dalej")
+            problem_statement_ = await bot.wait_for("message", check=check, timeout=600.0)
+            if problem_statement_.content == 'koniec':
+                await msg.delete()
+                await problem_statement_.delete()
+                break
+            statement_text += "\n" + problem_statement_.content
+            await msg.delete()
+    except asyncio.TimeoutError:
+        return
+    await ctx.send("Jeśli masz solva, wpisz go tutaj (koniecznie z spoiler tagiem!), jeśli nie odpisz: \"nie\"")
+    try:
+        problem_solve = await bot.wait_for("message", check=check, timeout=600.0)
+        solve_text = ""
+        if not (problem_solve.content == 'nie'):
+            solve_text = problem_solve.content
+            while (True):
+                msg = await ctx.send("Jeśli to cały solve, napisz \"koniec\". Jeśli nie pisz dalej")
+                problem_solve_ = await bot.wait_for("message", check=check, timeout=600.0)
+                if problem_solve_.content == 'koniec':
+                    await msg.delete()
+                    await problem_solve_.delete()
+                    break
+                solve_text += "\n" + problem_solve_.content
+                await msg.delete()
+    except asyncio.TimeoutError:
+        await ctx.send("Spoko")
+        return
+    await ctx.send("Jeśli masz tagi (np. Geometria) napisz je:")
+    try:
+        tagi = await bot.wait_for("message", check=check, timeout=600.0)
+    except asyncio.TimeoutError:
+        await ctx.send("Spoko")
+        return
+    ID = db.create_problem(statement_text, solve_text, tags=tagi.content)
+    await ctx.send(f"Dodano zadanie o ID: {ID}")
+
