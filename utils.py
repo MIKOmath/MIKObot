@@ -1,5 +1,15 @@
-class ClassMeet():
+from lib2to3.pgen2.tokenize import group
+
+
+class ClassMeet:
+    """
+    class that stores Class Meets events
+    load_from_discord - changes class variables to data fetched from discord
+    load_from_api - changes class variables to data fetched from API
+    change_type_str - changes type_str value to value corresponding to type.
+    """
     def __init__(self):
+        self.id = None
         self.type = 0
         self.type_str= "OM - Początujący"
         self.date = "2024-12-31"
@@ -53,8 +63,12 @@ class ClassMeet():
             h3='0'+str(h3)
         self.time = f"{h1}:{m1}-{h3}:{m3}"
         self.date = kolo_json["date"]
-        self.type = int(kolo_json["group"])
+        try:
+            self.type = int(kolo_json["group"])
+        except:
+            self.type = 0
         self.change_type_str()
+        self.id = kolo_json['id']
         self.description = kolo_json["description"]
         self.theme = kolo_json["theme"]
         self.stared = int(kolo_json["started"])
@@ -76,3 +90,16 @@ def user_class_match(typ,user_roles):
         if role.name == 'Informatyka' and typ==5:
             return True
     return False
+class Group:
+    def __init__(self):
+        self.name = "OM Średnia"
+        self.lead = "Koło przygotowywujące do II etapu OM"
+        self.description = "Fajna Grupa"
+        self.discord_role_id=0
+        self.default_difficulty=2
+    def load_from_json(self,json_group):
+        self.name = json_group['name']
+        self.lead = json_group['lead']
+        self.description = json_group['description']
+        self.discord_role_id = json_group['discord_role_id']
+        self.default_difficulty=json_group['default_difficulty']
