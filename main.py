@@ -1,6 +1,6 @@
+from http.client import responses
+
 import discord
-from aiohttp.helpers import method_must_be_empty_body
-from dateutil.rrule import weekday
 from discord.ext import commands, tasks
 
 from DataBaseCommands import get_class
@@ -17,25 +17,33 @@ bot = commands.Bot(command_prefix="!", intents=intents)
 async def add_class(ctx):
     await botcommands.add_class(ctx, bot)
 
-@bot.command(name="kola")
+@bot.command(name="Kola")
 async def print_classes(ctx):
     kola =  db.get_class()
     i=0;
+    response=""
     for kolo in kola:
         i+=1
-        await ctx.send(f"{i}: Kolo z {kolo.type_str}: \n Data: {kolo.date} w godzinach: {kolo.time} \n "
-                       f"Prowadzi: {kolo.host}, {kolo.description}")
-
+        response+=f"{i}: Kolo z {kolo.type_str}: \n Data: {kolo.date} w godzinach: {kolo.time} \n {kolo.theme} \n {kolo.description} \n"
+        if i>5:
+            break
+    if response=="":
+        response="Nie ma zaplanowanych kół"
+    await ctx.send(response)
 @bot.command(name="MojeKola")
 async def print_custom_classes(ctx):
     kola = db.get_class()
-    i = 0;
+    i = 0
+    response = ""
     for kolo in kola:
         if user_class_match(kolo.type,ctx.author.roles):
             i += 1
-            await ctx.send(
-                f"{i}: Kolo z {kolo.type_str}: \n Data: {kolo.date} w godzinach: {kolo.time} \n Prowadzi: {kolo.host}, "
-                f"{kolo.description}")
+            response+=f"{i}: Kolo z {kolo.type_str}: \n Data: {kolo.date} w godzinach: {kolo.time} \n {kolo.theme} \n {kolo.description} \n"
+            if (i > 5):
+                break
+    if response=="":
+        response="Nie ma zaplanowanych kół dla twoich ról"
+    await ctx.send(response)
 @bot.command(name="NoweZadanie")
 async def new_problem(ctx):
     await botcommands.new_problem(ctx,bot)
@@ -45,13 +53,7 @@ async def new_problem(ctx):
 @tasks.loop(hours=1)
 async def hourly_task():
     print(f'Bot is ready. Logged in as {bot.user}')
-    guild = bot.guilds[0]
-    for i in bot.guilds:
-        if i.name == 'testowanie bota':
-            guild = i
-            print(guild)
-    members = guild.members
-    db.sync_members(members)
+
 
 @bot.event
 async def on_message(message):
@@ -60,7 +62,6 @@ async def on_message(message):
 
         # Log the received message content
     print(f"Received message: {message.content}")
-    db.add_point(message.author,1)
     # Important: Process commands after custom logic
     await bot.process_commands(message)
 
@@ -68,17 +69,6 @@ async def on_message(message):
 async def on_reaction_add(reaction, user):
     #todo w zależności od kontentu wiadomości różne punkty
     print(reaction.message.content)
-    db.add_point(reaction.message.author,1)
-
-@bot.event
-async def on_reaction_remove(reaction, user):
-    db.add_point(reaction.message.author,-1)
-@bot.event
-async def on_member_join(member):
-    db.add_member(member)
-@bot.event
-async def on_member_remove(member):
-    db.remove_member(member)
 
 
 @bot.command()

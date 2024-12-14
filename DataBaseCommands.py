@@ -1,62 +1,58 @@
-from contextlib import nullcontext
 from utils import *
-from supabase import create_client, Client
-
 from utils import ClassMeet
+import requests
+import json
+import datetime
+# Base URL for the API
+BASE_API_URL = "https://mikomath.org/api/"
+# Endpoint for seminars
+SEMINARS_ENDPOINT = "seminars/"
+# Full URL for the seminars API
+SEMINARS_API_URL = f"{BASE_API_URL}{SEMINARS_ENDPOINT}"
 
-SupabaseClient = 0
-def connect_database():
-    # Step 1: Set up Supabase credentials (replace with your actual Supabase URL and API key)
-    SUPABASE_URL = "https://dbqakvurmeklbgyueptx.supabase.co"
-    SUPABASE_KEY = open('databasekey.txt').readline()
-    # Step 2: Create a Supabase client
-    global SupabaseClient
-    SupabaseClient = create_client(SUPABASE_URL, SUPABASE_KEY)
+def fetch_seminars( date_from=None):
+    """
+    Fetches seminar data from the API.
+    Returns a list of seminar data if successful, raises an exception otherwise.
+    """
+    try:
+        params = {}
+        if date_from:
+            params['start_date'] = date_from
+        # Send a GET request to the seminars API
 
-def sync_members(members):
-    #in: list of discord.member class
-    #Task: Add/remove members from db
+        response = requests.get(SEMINARS_API_URL,params = params)
+
+        # Raise an HTTPError if the response was unsuccessful
+        response.raise_for_status()
+
+        # Parse the JSON response
+        seminars = response.json()
+        return seminars
+
+    except requests.exceptions.RequestException as e:
+        print(f"An error occurred while fetching seminars: {e}")
+        raise
+
+def get_class():
+    try:
 
 
-    # Function to insert a new record into the 'messages' table
-    def insert_message(content: str):
-        response = SupabaseClient.table('messages').insert({'content': content, 'chuj2':2137}).execute()
-        print(response)
+        date_from_filter = datetime.date.today()
 
-    # Function to fetch messages from the 'messages' table
-    def fetch_messages():
-        response = SupabaseClient.table('messages').select('*').execute()
-        print(response)
+        seminar_data = fetch_seminars(date_from=date_from_filter)
+        sorted_seminars = sorted(
+            seminar_data['results'],
+            key=lambda x: x.get("date", "")
+        )
+        kola=[]
+        for kolo_raw in sorted_seminars:
+            kolo=ClassMeet()
+            kolo.load_from_api(kolo_raw)
+            kola.append(kolo)
+        return kola
+    except Exception as e:
+        print(f"Failed to fetch seminars: {e}")
+
+def add_class(kolo):
     pass
-def add_class(kolo: ClassMeet):
-    #Add_kolo to database
-    pass
-
-def get_class(time=14, role='all'):
-    #wybieramy koła z bazy danych dla roli i w czasie mniejszym niż time dni.
-    kolo1 = ClassMeet()
-    kolo2= ClassMeet()
-    kolo1.load_from_discord(type='1',date='2024-12-12',time='20:00-22:00',host="Fimpro",description="XD")
-    kolo2.load_from_discord(type='2',date='2024-12-14',time='20:33-22:00',host="Fimpro222",description="XD222")
-    return [kolo1,kolo2]
-
-def create_problem(content,solve,tags=""):
-    #dodanie zadania do bazy zadan
-    print("CONTENT",content)
-    print("SOLVE",solve)
-    print("TAGI",tags.split(" "))
-    id=0
-    return id
-
-def add_point(member, points):
-    #in discord.member class, int number
-    #Task add (points) points to given member
-    pass
-def add_member(member):
-    pass
-    #in discord.member class
-    #task add new member to database
-def remove_member(member):
-    pass
-    #in discord.member class
-    #task remove member from database

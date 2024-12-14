@@ -1,6 +1,4 @@
 import discord
-from aiohttp.helpers import method_must_be_empty_body
-from discord.ext import commands, tasks
 from utils import *
 import DataBaseCommands as db
 import asyncio
@@ -35,7 +33,7 @@ async def add_class(ctx, bot):
                 else:
                     await ctx.send("Podaj poprawną datę")
         except asyncio.TimeoutError:
-            await ctx.send("Poszłem se spać")
+            await ctx.send("Zamykam")
             return
         # Step 2: Ask for the Class time
         await ctx.send("I od której do której? (HH:MM-HH:MM)")
@@ -51,7 +49,7 @@ async def add_class(ctx, bot):
                 else:
                     await ctx.send("Podaj poprawną datę")
         except asyncio.TimeoutError:
-            await ctx.send("Poszłem se spać")
+            await ctx.send("Zamykam")
             return
         # Step 2: Ask for the Class type
 
@@ -69,29 +67,49 @@ async def add_class(ctx, bot):
                 else:
                     await ctx.send("Podaj poprawny typ")
         except asyncio.TimeoutError:
-            await ctx.send("Poszłem se spać")
+            await ctx.send("Zamykam")
             return
 
         # Step 3: Ask for any additional notes
         await ctx.send("Kto prowadzi?")
         try:
-
             meeting_host = await bot.wait_for("message", check=check, timeout=30.0)
         except asyncio.TimeoutError:
-            await ctx.send("Poszłem se spać")
+            await ctx.send("Zamykam")
             return
-
-        await ctx.send("Jakiś opis kurcze ten?")
+        await ctx.send("Podaj temat")
+        try:
+            meeting_theme = await bot.wait_for("message", check=check, timeout=30.0)
+        except asyncio.TimeoutError:
+            await ctx.send("Zamykam")
+            return
+        await ctx.send("Napisz Opis")
         try:
             meeting_description = await bot.wait_for("message", check=check, timeout=30.0)
         except asyncio.TimeoutError:
-            await ctx.send("Poszłem se spać")
+            await ctx.send("Zamykam")
             return
-
+        await ctx.send("Podaj trudność (0-4)")
+        try:
+            meeting_diff = await bot.wait_for("message", check=check, timeout=30.0)
+        except asyncio.TimeoutError:
+            await ctx.send("Zamykam")
+            return
+        await ctx.send("Czy gość specjalny (0) jeśli nie?")
+        try:
+            meeting_guest = await bot.wait_for("message", check=check, timeout=30.0)
+            if '0' in meeting_guest.content:
+                meeting_guest.content=""
+        except asyncio.TimeoutError:
+            await ctx.send("Zamykam")
+            return
         # Summarize the meeting details
         await ctx.send(f"Kółko ustawione")
         kolo = ClassMeet()
-        kolo.load_from_discord(meeting_type.content,meeting_date.content,meeting_time.content,meeting_host.content,meeting_description.content)
+        kolo.load_from_discord(meeting_type.content,meeting_date.content,
+                               meeting_time.content,meeting_host.content,
+                               meeting_description.content,meeting_theme.content,
+                               meeting_diff.content, meeting_guest.content)
         db.add_class(kolo)
     else:
         await ctx.send(f"You are not worthy, {ctx.author.mention}")
