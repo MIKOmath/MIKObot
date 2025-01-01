@@ -35,7 +35,7 @@ async def add_class(ctx, bot):
                 else:
                     await ctx.send("Podaj poprawną datę")
         except asyncio.TimeoutError:
-            await ctx.send("Poszłem se spać")
+            await ctx.send("timeout")
             return
         # Step 2: Ask for the Class time
         await ctx.send("I od której do której? (HH:MM-HH:MM)")
@@ -51,7 +51,7 @@ async def add_class(ctx, bot):
                 else:
                     await ctx.send("Podaj poprawną datę")
         except asyncio.TimeoutError:
-            await ctx.send("Poszłem se spać")
+            await ctx.send("timeout")
             return
         # Step 2: Ask for the Class type
 
@@ -69,7 +69,7 @@ async def add_class(ctx, bot):
                 else:
                     await ctx.send("Podaj poprawny typ")
         except asyncio.TimeoutError:
-            await ctx.send("Poszłem se spać")
+            await ctx.send("timeout")
             return
 
         # Step 3: Ask for any additional notes
@@ -78,14 +78,14 @@ async def add_class(ctx, bot):
 
             meeting_host = await bot.wait_for("message", check=check, timeout=30.0)
         except asyncio.TimeoutError:
-            await ctx.send("Poszłem se spać")
+            await ctx.send("timeout")
             return
 
         await ctx.send("Jakiś opis kurcze ten?")
         try:
             meeting_description = await bot.wait_for("message", check=check, timeout=30.0)
         except asyncio.TimeoutError:
-            await ctx.send("Poszłem se spać")
+            await ctx.send("timeout")
             return
 
         # Summarize the meeting details
