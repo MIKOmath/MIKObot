@@ -7,7 +7,7 @@ from utils import ClassMeet
 SupabaseClient = 0
 def connect_database():
     # Step 1: Set up Supabase credentials (replace with your actual Supabase URL and API key)
-    SUPABASE_URL = "https://dbqakvurmeklbgyueptx.supabase.co"
+    SUPABASE_URL = "no-url"
     SUPABASE_KEY = open('databasekey.txt').readline()
     # Step 2: Create a Supabase client
     global SupabaseClient
@@ -20,7 +20,7 @@ def sync_members(members):
 
     # Function to insert a new record into the 'messages' table
     def insert_message(content: str):
-        response = SupabaseClient.table('messages').insert({'content': content, 'chuj2':2137}).execute()
+        response = SupabaseClient.table('messages').insert({'content': content, 'something':1234}).execute()
         print(response)
 
     # Function to fetch messages from the 'messages' table
