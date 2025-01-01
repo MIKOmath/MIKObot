@@ -4,7 +4,7 @@ from http.client import responses
 import discord
 from discord.ext import commands, tasks
 
-from DataBaseCommands import get_class, fetch_seminars
+from DataBaseCommands import get_class, fetch_seminars, get_groups, get_group_by_id
 from botcommands import add_class
 from utils import *
 import DataBaseCommands as db
@@ -14,6 +14,10 @@ import botcommands
 import unicodedata
 from html import unescape
 # Initialize the bot with a command prefix (e.g., "!")
+
+CHANNEL_ID = 700808531254837383
+GUILD_ID = 700808531254837380
+
 intents = discord.Intents.all()
 bot = commands.Bot(command_prefix="!", intents=intents)
 @bot.command(name="UstawKolo")
@@ -59,16 +63,47 @@ async def print_groups(ctx):
 @tasks.loop(seconds=15)
 async def hourly_task():
     print(f'Bot is ready. Logged in as {bot.user}')
+
+
     date = datetime.date.today()
     time = datetime.datetime.now().now()
-    hours= str(time)[:2]
-    print(hours)
+    hours= str(time)[11:13]
+
+    guild = bot.get_guild(GUILD_ID)
     seminars = db.get_class(exact_date=date)
+    channel = bot.get_channel(CHANNEL_ID)
     for seminar in seminars:
+
+
         seminar_hours = seminar.time[:2]
-        if abs(int(hours)-int(seminar_hours))<2 and not seminar.started:
-            print(seminar.theme)
-            db.start_class(seminar)
+        if int(seminar_hours)-int(hours)<2 and not seminar.started:
+            db.start_class(seminar.id, open("api_token.txt",'r').readline())
+            group = get_group_by_id(seminar.type)
+            if(group):
+                role = discord.utils.get(guild.roles, id=int(group.discord_role_id))
+                if role:
+                    await channel.send(f"Zapraszamy na koło {role.mention} \n Kolo z {seminar.type_str}: \n Data: "
+                                       f"{seminar.date} w godzinach: {seminar.time} \n {seminar.theme} \n {seminar.description} \n")
+                else:
+                    await channel.send(f"Zapraszamy na koło \n Kolo z {seminar.type_str}: \n Data: "
+                                       f"{seminar.date} w godzinach: {seminar.time} \n {seminar.theme} \n {seminar.description} \n")
+            else:
+                await channel.send(f"Zapraszamy na koło \n Kolo z {seminar.type_str}: \n Data: "
+                                       f"{seminar.date} w godzinach: {seminar.time} \n {seminar.theme} \n {seminar.description} \n")
+        seminar_hours = seminar.time[6:8]
+        if int(seminar_hours)-int(hours)<0 and not seminar.finished:
+
+            db.finish_class(seminar.id, open("api_token.txt",'r').readline())
+            group = get_group_by_id(seminar.type)
+            if group:
+                role = discord.utils.get(guild.roles, id=int(group.discord_role_id))
+
+                if role:
+                    await channel.send(f"Dziękujemy za koło {role.mention}  i prosimy o feedback")
+                else:
+                    await channel.send(f"Dziękujemy za koło i prosimy o feedback")
+            else:
+                await channel.send(f"Dziękujemy za koło i prosimy o feedback")
 
 
 @bot.event
@@ -76,6 +111,6 @@ async def on_ready():
     if not hourly_task.is_running():
         hourly_task.start()
 
-# Run the bot using your token (replace 'your_token' with the actual bot token)
-token = open("token.txt","r").readline()
-bot.run(token)
+if __name__ == "__main__":
+    token = open("token.txt","r").readline()
+    bot.run(token)

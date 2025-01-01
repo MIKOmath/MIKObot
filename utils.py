@@ -1,4 +1,4 @@
-from lib2to3.pgen2.tokenize import group
+
 
 
 class ClassMeet:
@@ -17,7 +17,7 @@ class ClassMeet:
         self.host = "Filip Manijak"
         self.description = "Super koło"
         self.theme = "Przykladowe koło"
-        self.stared=0
+        self.started=0
         self.finished=0
         self.difficulty=1
         self.special_guest=""
@@ -50,18 +50,18 @@ class ClassMeet:
         h2, m2, s2 = kolo_json["duration"].split(':')
         s3= int(s1)+int(s2)
         if s3>=60:
-            m1+=1
+            m1=int(m1)+1
             s3=s3-60
         m3 = int(m1)+int(m2)
         if m3>60:
-            h1+=1
+            h1=int(h1)+1
             m3=m3-60
         if m3<10:
             m3='0'+str(m3)
         h3=(int(h1)+int(h2))%24
         if h3<10:
             h3='0'+str(h3)
-        self.time = f"{h1}:{m1}-{h3}:{m3}"
+        self.time = f"{h1}:{str(m1)}-{h3}:{str(m3)}"
         self.date = kolo_json["date"]
         try:
             self.type = int(kolo_json["group"])
@@ -71,10 +71,13 @@ class ClassMeet:
         self.id = kolo_json['id']
         self.description = kolo_json["description"]
         self.theme = kolo_json["theme"]
-        self.stared = int(kolo_json["started"])
+        self.type = kolo_json["group"]
+
+        self.started = int(kolo_json["started"])
         self.finished = int(kolo_json["finished"])
         self.difficulty = int(kolo_json['difficulty'])
         self.special_guest= kolo_json['special_guest']
+
 def user_class_match(typ,user_roles):
     for role in user_roles:
         if role.name=='Początkująca' and typ==0:
